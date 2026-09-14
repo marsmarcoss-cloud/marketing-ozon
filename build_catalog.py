@@ -41,6 +41,33 @@ def api(cid, key, path, body):
     raise SystemExit("Ozon API: исчерпаны попытки")
 
 
+def fetch_details(cid, key, skus):
+    """Витринные цены /v1/product/prices/details: {offer: customer_price}.
+
+    customer_price — то, что реально видит покупатель на карточке
+    (с учётом соинвеста Ozon и скидки по Ozon Карте). Метод новый (GA 03.2026);
+    если у API-ключа нет доступа (403) — возвращаем {} и магазин живёт
+    на ценах продавца, как раньше.
+    """
+    out = {}
+    for i in range(0, len(skus), 1000):
+        try:
+            r = api(cid, key, "/v1/product/prices/details", {"skus": skus[i:i + 1000]})
+        except urllib.error.HTTPError as e:
+            if e.code == 403:
+                return {}
+            raise
+        for p in r.get("prices") or []:
+            k = (p.get("offer_id") or "").strip().upper().replace(" ", "")
+            try:
+                cp = float((p.get("customer_price") or {}).get("amount") or 0)
+            except (TypeError, ValueError):
+                cp = 0.0
+            if k and cp > 0:
+                out[k] = cp
+    return out
+
+
 def fetch_store(cid, key):
     prices, cursor = {}, ""
     while True:
@@ -81,9 +108,12 @@ def fetch_store(cid, key):
 def main():
     snap = json.load(open(os.path.join(HERE, "snapshot.json"), encoding="utf-8"))
     tags = json.load(open(os.path.join(HERE, "tags.json"), encoding="utf-8"))
-    live = {}
+    live, cust = {}, {}
     for sid, cid, key in STORES:
         live[sid] = fetch_store(cid, key)
+        cust[sid] = fetch_details(cid, key,
+                                  [str(e[sid]["sku"]) for e in snap.values() if sid in e])
+        print(f"{sid}: витринных цен {len(cust[sid])}", file=sys.stderr)
     out = []
     for k, e in snap.items():
         best = None
@@ -94,8 +124,11 @@ def main():
             if not p or p["price"] <= 0:
                 continue
             in_stock = live[sid][1].get(k, False)
-            cand = {"price": int(p["price"]), "old": int(p["old"]) if p["old"] > p["price"] else None,
-                    "sku": e[sid]["sku"], "in_stock": in_stock, "hot": p.get("hot", False)}
+            cp = cust[sid].get(k, 0.0)
+            shown = cp if cp > 0 else p["price"]
+            cand = {"price": int(round(shown)), "old": int(p["old"]) if p["old"] > shown else None,
+                    "sku": e[sid]["sku"], "in_stock": in_stock, "hot": p.get("hot", False),
+                    "card": cp > 0 and cp < p["price"]}
             if best is None or (cand["in_stock"], -cand["price"]) > (best["in_stock"], -best["price"]):
                 best = cand
         if best is None:
@@ -106,7 +139,7 @@ def main():
             "price": best["price"], "old": best["old"],
             "disc": round(100 - best["price"] * 100 / best["old"]) if best["old"] else None,
             "stock": e.get("rank", 0) if best["in_stock"] else 0,
-            "hot": best["hot"],
+            "hot": best["hot"], "card": best["card"],
             "url": f"https://www.ozon.ru/product/{best['sku']}/",
             "img": e["img"], "store": 2 if "s2" in e else 1,
             "cat": t["cat"], "sub": t["sub"], "brands": t["brands"],

@@ -137,6 +137,7 @@ img{display:block;max-width:100%}
 .card.oos .ph img{opacity:.45;filter:grayscale(.65)}
 .info{padding:8px 9px 11px;display:flex;flex-direction:column;gap:3px;flex:1}
 .prices{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.cardlbl{font-size:11px;color:#0f7a3d;font-weight:600;line-height:1.1;margin-top:1px}
 .price{font-size:18px;font-weight:900;letter-spacing:-.3px}
 .old{font-size:12px;color:var(--muted);text-decoration:line-through}
 .name{
@@ -385,6 +386,7 @@ function prepare(arr){
       old: old,
       disc: disc,
       stock: Number(r.stock) || 0,
+      card: !!r.card,
       url: r.url || '',
       img: r.img || '',
       cat: cat,
@@ -516,6 +518,7 @@ function cardHTML(it, idx){
         '<div class="prices"><div class="price">' + money(it.price) + '</div>' +
           (it.old ? '<div class="old">' + money(it.old) + '</div>' : '') +
         '</div>' +
+        (it.card ? '<div class="cardlbl">с Ozon Картой</div>' : '') +
         '<div class="name">' + esc(it.name) + '</div>' +
         '<div class="art">' + esc(it.art) + '</div>' +
       '</div>' +
@@ -621,7 +624,8 @@ function openProduct(it){
         (it.old ? '<div class="p-old">' + money(it.old) + '</div>' : '') +
         (it.disc ? '<div class="p-disc">−' + it.disc + '%</div>' : '') +
       '</div>' +
-      (it.hot ? '<div style="margin:8px 0 2px;background:#e7f7ec;color:#0f7a3d;border-radius:10px;padding:8px 12px;font-size:13.5px;font-weight:600">⚡ Сейчас действует акция Ozon — цена на карточке может быть ещё ниже</div>' : '') +
+      (it.card ? '<div style="margin:8px 0 2px;background:#e7f7ec;color:#0f7a3d;border-radius:10px;padding:8px 12px;font-size:13.5px;font-weight:600">💳 Цена с Ozon Картой — как на витрине Ozon прямо сейчас</div>' :
+       it.hot ? '<div style="margin:8px 0 2px;background:#e7f7ec;color:#0f7a3d;border-radius:10px;padding:8px 12px;font-size:13.5px;font-weight:600">⚡ Сейчас действует акция Ozon — цена на карточке может быть ещё ниже</div>' : '') +
       '<div class="p-name">' + esc(it.name) + '</div>' +
       '<div class="p-meta">' +
         '<button class="p-art" id="copyArt">Артикул: ' + esc(it.art) + '</button>' +
