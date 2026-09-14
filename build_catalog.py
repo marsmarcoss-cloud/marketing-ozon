@@ -58,7 +58,9 @@ def fetch_store(cid, key):
             cands = [v for v in (num(p.get("marketing_price")),
                                  num(p.get("marketing_seller_price")),
                                  num(p.get("price"))) if v > 0]
-            prices[k] = {"price": min(cands) if cands else 0.0, "old": num(p.get("old_price"))}
+            color = ((it.get("price_indexes") or {}).get("color_index") or "").upper()
+            prices[k] = {"price": min(cands) if cands else 0.0, "old": num(p.get("old_price")),
+                         "hot": color in ("SUPER", "GREEN")}
         cursor = r.get("cursor") or ""
         if not cursor or not items:
             break
@@ -93,7 +95,7 @@ def main():
                 continue
             in_stock = live[sid][1].get(k, False)
             cand = {"price": int(p["price"]), "old": int(p["old"]) if p["old"] > p["price"] else None,
-                    "sku": e[sid]["sku"], "in_stock": in_stock}
+                    "sku": e[sid]["sku"], "in_stock": in_stock, "hot": p.get("hot", False)}
             if best is None or (cand["in_stock"], -cand["price"]) > (best["in_stock"], -best["price"]):
                 best = cand
         if best is None:
@@ -104,6 +106,7 @@ def main():
             "price": best["price"], "old": best["old"],
             "disc": round(100 - best["price"] * 100 / best["old"]) if best["old"] else None,
             "stock": e.get("rank", 0) if best["in_stock"] else 0,
+            "hot": best["hot"],
             "url": f"https://www.ozon.ru/product/{best['sku']}/",
             "img": e["img"], "store": 2 if "s2" in e else 1,
             "cat": t["cat"], "sub": t["sub"], "brands": t["brands"],
