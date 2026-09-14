@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>KRAFT · Каталог</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --blue:#002f87;
+  --blue-dark:#00205c;
+  --blue-soft:#e8eefb;
+  --bg:#f2f5fa;
+  --card:#ffffff;
+  --text:#111827;
+  --muted:#8a94a6;
+  --line:#e4e9f2;
+  --red:#e8271b;
+  --radius:14px;
+  --header-h:104px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:14px;line-height:1.35;
+  overscroll-behavior-y:none;
+}
+button{font-family:inherit;font-size:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+input{font-family:inherit;font-size:inherit}
+img{display:block;max-width:100%}
+
+/* ---------- Шапка ---------- */
+.header{
+  position:sticky;top:0;z-index:30;
+  background:var(--blue);
+  padding:calc(10px + var(--safe-top)) 12px 0;
+  box-shadow:0 2px 10px rgba(0,32,92,.18);
+}
+.brandline{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.logo{
+  font-weight:900;letter-spacing:2.5px;color:#fff;font-size:20px;
+  display:flex;align-items:baseline;gap:6px;flex:none;
+}
+.logo span{font-size:9px;font-weight:600;letter-spacing:1.4px;color:#9db6e8}
+.searchwrap{position:relative;flex:1}
+.searchwrap input{
+  width:100%;height:38px;border-radius:10px;border:0;
+  padding:0 34px 0 34px;background:#fff;color:var(--text);
+  outline:none;font-size:15px;
+}
+.searchwrap input::placeholder{color:#a9b2c2}
+.ic-search{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;opacity:.45;pointer-events:none
+}
+.clr{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:24px;height:24px;border-radius:50%;background:#eef1f6;color:#7b8694;
+  font-size:15px;line-height:24px;text-align:center;display:none
+}
+.clr.on{display:block}
+
+/* ---------- Табы ---------- */
+.tabs{display:flex;gap:24px;padding:0 2px}
+.tab{
+  position:relative;padding:9px 0 10px;color:#a8beea;font-weight:700;font-size:15px;
+}
+.tab.active{color:#fff}
+.tab.active::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#fff
+}
+.tab i{font-style:normal;font-weight:500;font-size:11px;opacity:.7;margin-left:4px}
+
+/* ---------- Чипы ---------- */
+.chipbar{
+  display:flex;gap:7px;overflow-x:auto;padding:9px 12px;
+  background:var(--card);border-bottom:1px solid var(--line);
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.chipbar::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;padding:7px 13px;border-radius:20px;background:#eff2f8;color:#43506b;
+  font-size:13px;font-weight:600;white-space:nowrap;border:1px solid transparent;
+}
+.chip.active{background:var(--blue);color:#fff}
+.chip.brand{background:#fff;border-color:var(--blue);color:var(--blue)}
+.chip.brand.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ---------- Сортировка / счётчик ---------- */
+.toolbar{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;
+  background:var(--bg);position:sticky;top:var(--header-h);z-index:20;
+}
+.sorts{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}
+.sorts::-webkit-scrollbar{display:none}
+.sort{
+  flex:none;padding:5px 11px;border-radius:8px;font-size:12.5px;font-weight:600;
+  background:#fff;color:#5a6478;border:1px solid var(--line)
+}
+.sort.active{background:var(--blue-soft);border-color:#b9cbf0;color:var(--blue)}
+.count{
+  flex:none;font-size:12px;color:var(--muted);
+  padding-left:10px;background:var(--bg);box-shadow:-10px 0 8px -4px var(--bg)
+}
+
+/* ---------- Сетка ---------- */
+.grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  padding:2px 8px calc(28px + var(--safe-bottom));
+}
+.card{
+  background:var(--card);border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 1px 3px rgba(16,30,60,.06);
+  content-visibility:auto;contain-intrinsic-size:auto 280px;
+}
+.card:active{transform:scale(.985)}
+.ph{position:relative;width:100%;aspect-ratio:1/1;background:#f6f8fc;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:contain;background:#fff}
+.ph .stub{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#c3ccdd;font-weight:900;letter-spacing:2px;font-size:15px;background:#f1f4fa
+}
+.disc{
+  position:absolute;left:6px;top:6px;background:var(--red);color:#fff;
+  font-size:11.5px;font-weight:800;padding:3px 6px;border-radius:6px
+}
+.oos-badge{
+  position:absolute;left:6px;bottom:6px;background:rgba(17,24,39,.74);color:#fff;
+  font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px
+}
+.card.oos .ph img{opacity:.45;filter:grayscale(.65)}
+.info{padding:8px 9px 11px;display:flex;flex-direction:column;gap:3px;flex:1}
+.prices{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.price{font-size:18px;font-weight:900;letter-spacing:-.3px}
+.old{font-size:12px;color:var(--muted);text-decoration:line-through}
+.name{
+  font-size:12.5px;color:#26314a;line-height:1.28;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  min-height:2.56em;
+}
+.art{font-size:10.5px;color:var(--muted);letter-spacing:.4px;margin-top:auto;padding-top:3px}
+
+.empty{padding:60px 24px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:#4a5468;font-size:16px;margin-bottom:6px}
+.sentinel{height:1px}
+.loader{padding:16px;text-align:center;color:var(--muted);font-size:12px}
+
+/* ---------- Карточка товара ---------- */
+.sheet{
+  position:fixed;inset:0;z-index:60;background:var(--bg);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .22s ease;
+  visibility:hidden;
+}
+.sheet.open{transform:translateX(0);visibility:visible}
+.sheet-head{
+  flex:none;background:var(--blue);color:#fff;
+  padding:calc(9px + var(--safe-top)) 12px 9px;
+  display:flex;align-items:center;gap:10px;font-weight:700
+}
+.back{padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.14);font-size:14px}
+.sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px}
+.hero{background:#fff;padding:14px;display:flex;align-items:center;justify-content:center;min-height:260px}
+.hero img{max-height:300px;width:auto;object-fit:contain}
+.hero .stub{color:#c3ccdd;font-weight:900;letter-spacing:3px;font-size:22px}
+.block{background:#fff;margin-top:8px;padding:14px}
+.p-prices{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.p-price{font-size:30px;font-weight:900;letter-spacing:-.8px}
+.p-old{font-size:15px;color:var(--muted);text-decoration:line-through}
+.p-disc{background:var(--red);color:#fff;font-size:13px;font-weight:800;padding:3px 8px;border-radius:7px}
+.p-name{font-size:16px;font-weight:600;line-height:1.35;margin-top:10px;color:#1b2540}
+.p-meta{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.p-art{
+  font-size:12.5px;color:#46526b;background:#eff2f8;border-radius:8px;padding:6px 10px;
+  letter-spacing:.5px;font-weight:600
+}
+.p-stock{font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:8px}
+.p-stock.in{background:#e7f6ec;color:#17803d}
+.p-stock.out{background:#fdeceb;color:#b3231a}
+.sec-t{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;margin-bottom:9px}
+.bchips{display:flex;flex-wrap:wrap;gap:6px}
+.bchip{background:var(--blue-soft);color:var(--blue);font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:8px}
+.buywrap{
+  flex:none;padding:10px 12px calc(10px + var(--safe-bottom));
+  background:#fff;border-top:1px solid var(--line)
+}
+.buy{
+  width:100%;height:52px;border-radius:13px;background:var(--blue);color:#fff;
+  font-size:16.5px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px
+}
+.buy:active{background:var(--blue-dark)}
+.buy.dis{background:#c3ccdd}
+.toast{
+  position:fixed;left:50%;bottom:calc(80px + var(--safe-bottom));transform:translateX(-50%) translateY(10px);
+  background:#111827;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;
+  opacity:0;pointer-events:none;transition:.18s;z-index:90;white-space:nowrap
+}
+.toast.on{opacity:.95;transform:translateX(-50%) translateY(0)}
+.splash{padding:70px 20px;text-align:center;color:var(--muted)}
+.spin{
+  width:26px;height:26px;margin:0 auto 12px;border-radius:50%;
+  border:3px solid #dbe3f2;border-top-color:var(--blue);animation:sp .8s linear infinite
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (min-width:620px){
+  .grid{grid-template-columns:repeat(4,1fr);max-width:900px;margin:0 auto}
+  .sheet-body,.buywrap{max-width:640px;margin:0 auto;width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="header" id="header">
+  <div class="brandline">
+    <div class="logo">KRAFT<span>КАТАЛОГ</span></div>
+    <div class="searchwrap">
+      <svg class="ic-search" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.4">
+        <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6" stroke-linecap="round"/>
+      </svg>
+      <input id="q" type="search" placeholder="Поиск по названию или артикулу" autocomplete="off" enterkeyhint="search">
+      <button class="clr" id="clr" aria-label="Очистить">×</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-cat="tools">Инструмент<i id="cntTools"></i></button>
+    <button class="tab" data-cat="parts">Запчасти<i id="cntParts"></i></button>
+  </div>
+</div>
+
+<div class="chipbar" id="subbar"></div>
+<div class="chipbar" id="brandbar" hidden></div>
+
+<div class="toolbar">
+  <div class="sorts" id="sorts">
+    <button class="sort active" data-sort="pop">Популярные</button>
+    <button class="sort" data-sort="cheap">Дешевле</button>
+    <button class="sort" data-sort="exp">Дороже</button>
+    <button class="sort" data-sort="disc">Скидка</button>
+  </div>
+  <div class="count" id="count"></div>
+</div>
+
+<div id="grid" class="grid"></div>
+<div class="sentinel" id="sentinel"></div>
+<div class="loader" id="loader" hidden>Загружаем ещё…</div>
+<div id="splash" class="splash"><div class="spin"></div>Загружаем каталог…</div>
+
+<!-- Карточка товара -->
+<div class="sheet" id="sheet">
+  <div class="sheet-head">
+    <button class="back" id="back">← Назад</button>
+    <div>Товар</div>
+  </div>
+  <div class="sheet-body" id="sheetBody"></div>
+  <div class="buywrap"><button class="buy" id="buy">Купить на Ozon</button></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= Telegram ================= */
+var TG = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+if (TG) {
+  try { TG.ready(); TG.expand(); } catch(e){}
+  try { if (TG.setHeaderColor) TG.setHeaderColor('#002f87'); } catch(e){}
+  try { if (TG.setBackgroundColor) TG.setBackgroundColor('#f2f5fa'); } catch(e){}
+  try { if (TG.disableVerticalSwipes) TG.disableVerticalSwipes(); } catch(e){}
+}
+function haptic(type){
+  try { if (TG && TG.HapticFeedback) TG.HapticFeedback.impactOccurred(type||'light'); } catch(e){}
+}
+function openLink(url){
+  if (!url) return;
+  if (TG && typeof TG.openLink === 'function') { try { TG.openLink(url); return; } catch(e){} }
+  window.open(url, '_blank', 'noopener');
+}
+
+/* ================= Словари ================= */
+var SUB_RU = {
+  /* инструмент */
+  jack:'Домкраты', pump:'Насосы и компрессоры', wrench:'Ключи и головки',
+  stand:'Подставки и упоры', sets:'Наборы', other_tool:'Прочий инструмент',
+  /* запчасти */
+  brakes:'Тормоза', suspension:'Подвеска', steering:'Рулевое', filters:'Фильтры',
+  electric:'Электрика', sensors:'Датчики', bearing:'Подшипники и ступицы',
+  belts:'Ремни и ролики', clutch:'Сцепление', body:'Кузов и салон',
+  other_part:'Прочие запчасти'
+};
+var SUB_ORDER = {
+  tools:['jack','pump','wrench','stand','sets','other_tool'],
+  parts:['brakes','suspension','steering','filters','electric','sensors','bearing','belts','clutch','body','other_part']
+};
+function subRu(s){ return SUB_RU[s] || (s ? s.replace(/_/g,' ') : 'Прочее'); }
+
+/* ================= Состояние ================= */
+var ALL = [];                 // все товары (нормализованные)
+var BY_CAT = {tools:[], parts:[]};
+var SUBS = {tools:[], parts:[]};
+var BRANDS = [];
+var state = {
+  cat:'tools',
+  sub:'all',
+  brand:'all',
+  sort:'pop',
+  q:''
+};
+var view = [];                // текущий отфильтрованный список
+var shown = 0;
+var PAGE = 40;
+var current = null;           // товар в открытой карточке
+
+/* ================= DOM ================= */
+var $ = function(id){ return document.getElementById(id); };
+var elGrid=$('grid'), elCount=$('count'), elSub=$('subbar'), elBrand=$('brandbar'),
+    elQ=$('q'), elClr=$('clr'), elLoader=$('loader'), elSplash=$('splash'),
+    elSheet=$('sheet'), elSheetBody=$('sheetBody'), elBuy=$('buy'), elToast=$('toast');
+
+/* ================= Утилиты ================= */
+function norm(s){
+  return String(s == null ? '' : s).toLowerCase().replace(/ё/g,'е');
+}
+function keyify(s){           // для поиска артикула без пробелов/дефисов
+  return norm(s).replace(/[^a-zа-я0-9]/g,'');
+}
+function money(n){
+  n = Math.round(Number(n)||0);
+  return n.toLocaleString('ru-RU').replace(/ /g,' ') + ' ₽';
+}
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+function toast(msg){
+  elToast.textContent = msg;
+  elToast.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ elToast.classList.remove('on'); }, 1500);
+}
+
+/* ================= Загрузка данных ================= */
+fetch('catalog.json', {cache:'no-cache'})
+  .then(function(r){
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(data){
+    var arr = Array.isArray(data) ? data : (data && (data.items || data.products || data.catalog)) || [];
+    prepare(arr);
+    elSplash.hidden = true;
+    buildChips();
+    apply();
+  })
+  .catch(function(err){
+    elSplash.innerHTML = '<b style="color:#e8271b">Не удалось загрузить каталог</b><br>' +
+      '<span style="font-size:12px">' + esc(err.message) + '</span><br>' +
+      '<span style="font-size:12px">Положите catalog.json рядом с app.html и откройте страницу через сервер.</span>';
+  });
+
+function prepare(arr){
+  var seenB = {};
+  for (var i=0; i<arr.length; i++){
+    var r = arr[i] || {};
+    var price = Number(r.price) || 0;
+    var old   = Number(r.old) || 0;
+    var disc  = Number(r.disc) || 0;
+    if (!disc && old > price && price > 0) disc = Math.round((1 - price/old) * 100);
+    if (old <= price) old = 0;
+    if (disc < 1) disc = 0;
+    var cat = (r.cat === 'parts') ? 'parts' : 'tools';
+    var brands = Array.isArray(r.brands) ? r.brands : [];
+    var it = {
+      art: String(r.art || ''),
+      name: String(r.name || 'Без названия'),
+      price: price,
+      old: old,
+      disc: disc,
+      stock: Number(r.stock) || 0,
+      url: r.url || '',
+      img: r.img || '',
+      cat: cat,
+      sub: r.sub || (cat === 'parts' ? 'other_part' : 'other_tool'),
+      brands: brands,
+      _s: norm(r.name) + ' ' + norm(r.art),
+      _k: keyify(r.name) + ' ' + keyify(r.art),
+      _b: brands.length ? norm(brands.join(' ')) : '',
+      _i: i
+    };
+    ALL.push(it);
+    BY_CAT[cat].push(it);
+    for (var j=0; j<brands.length; j++){
+      if (!seenB[brands[j]]) { seenB[brands[j]] = 1; BRANDS.push(brands[j]); }
+    }
+  }
+  BRANDS.sort(function(a,b){ return a.localeCompare(b, 'ru'); });
+
+  ['tools','parts'].forEach(function(c){
+    var cnt = {};
+    BY_CAT[c].forEach(function(it){ cnt[it.sub] = (cnt[it.sub]||0) + 1; });
+    var order = SUB_ORDER[c] || [];
+    var list = order.filter(function(s){ return cnt[s]; });
+    Object.keys(cnt).forEach(function(s){ if (order.indexOf(s) === -1) list.push(s); });
+    SUBS[c] = list.map(function(s){ return {key:s, n:cnt[s]}; });
+  });
+
+  $('cntTools').textContent = BY_CAT.tools.length ? '· ' + BY_CAT.tools.length : '';
+  $('cntParts').textContent = BY_CAT.parts.length ? '· ' + BY_CAT.parts.length : '';
+}
+
+/* ================= Чипы ================= */
+function buildChips(){
+  // подкатегории
+  var h = '<button class="chip active" data-sub="all">Все</button>';
+  SUBS[state.cat].forEach(function(s){
+    h += '<button class="chip" data-sub="' + esc(s.key) + '">' + esc(subRu(s.key)) + '</button>';
+  });
+  elSub.innerHTML = h;
+  elSub.scrollLeft = 0;
+
+  // марки — только для запчастей
+  if (state.cat === 'parts' && BRANDS.length){
+    var b = '<button class="chip brand active" data-brand="all">Все марки</button>';
+    BRANDS.forEach(function(m){
+      b += '<button class="chip brand" data-brand="' + esc(m) + '">' + esc(m) + '</button>';
+    });
+    elBrand.innerHTML = b;
+    elBrand.hidden = false;
+    elBrand.scrollLeft = 0;
+  } else {
+    elBrand.hidden = true;
+    elBrand.innerHTML = '';
+  }
+  syncHeaderOffset();
+}
+
+function syncHeaderOffset(){
+  var h = $('header').offsetHeight + elSub.offsetHeight + (elBrand.hidden ? 0 : elBrand.offsetHeight);
+  document.documentElement.style.setProperty('--header-h', h + 'px');
+}
+window.addEventListener('resize', syncHeaderOffset);
+
+/* ================= Фильтрация + сортировка ================= */
+function apply(){
+  var q  = norm(state.q).trim();
+  var qk = keyify(state.q);
+  var words = q ? q.split(/\s+/).filter(Boolean) : [];
+  // при активном поиске ищем по ВСЕМУ каталогу, а не только по открытой вкладке
+  var searching = words.length > 0;
+  var pool = searching ? ALL : BY_CAT[state.cat];
+  var sub = state.sub, brand = state.brand, nbrand = norm(brand);
+
+  var out = [];
+  for (var i=0; i<pool.length; i++){
+    var it = pool[i];
+    if (!searching && sub !== 'all' && it.sub !== sub) continue;
+    if (brand !== 'all' && it._b.indexOf(nbrand) === -1) continue;
+    if (words.length){
+      var ok = true;
+      for (var w=0; w<words.length; w++){
+        if (it._s.indexOf(words[w]) === -1) { ok = false; break; }
+      }
+      // фолбэк: слитный запрос вроде «kt104471»
+      if (!ok && qk && it._k.indexOf(qk) !== -1) ok = true;
+      if (!ok) continue;
+    }
+    out.push(it);
+  }
+
+  var s = state.sort;
+  out.sort(function(a,b){
+    // нет в наличии — всегда в конец
+    var ao = a.stock > 0 ? 0 : 1, bo = b.stock > 0 ? 0 : 1;
+    if (ao !== bo) return ao - bo;
+    if (s === 'cheap') return (a.price - b.price) || (b.stock - a.stock);
+    if (s === 'exp')   return (b.price - a.price) || (b.stock - a.stock);
+    if (s === 'disc')  return (b.disc - a.disc) || (b.stock - a.stock);
+    return (b.stock - a.stock) || (b.disc - a.disc) || (a._i - b._i);
+  });
+
+  view = out;
+  shown = 0;
+  elGrid.innerHTML = '';
+  elCount.textContent = out.length ? out.length + ' тов.' : '';
+  if (!out.length){
+    elGrid.innerHTML = '<div class="empty" style="grid-column:1/-1"><b>Ничего не найдено</b>' +
+      'Попробуйте другой запрос или сбросьте фильтры</div>';
+    elLoader.hidden = true;
+    return;
+  }
+  more();
+  window.scrollTo(0, 0);
+}
+
+/* ================= Рендер порциями ================= */
+function cardHTML(it, idx){
+  var img = it.img
+    ? '<img loading="lazy" decoding="async" src="' + esc(it.img) + '" alt="" ' +
+      'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+      '<div class="stub" style="display:none">KRAFT</div>'
+    : '<div class="stub">KRAFT</div>';
+  return '<div class="card' + (it.stock > 0 ? '' : ' oos') + '" data-i="' + idx + '">' +
+      '<div class="ph">' + img +
+        (it.disc ? '<div class="disc">−' + it.disc + '%</div>' : '') +
+        (it.stock > 0 ? '' : '<div class="oos-badge">Нет в наличии</div>') +
+      '</div>' +
+      '<div class="info">' +
+        '<div class="prices"><div class="price">' + money(it.price) + '</div>' +
+          (it.old ? '<div class="old">' + money(it.old) + '</div>' : '') +
+        '</div>' +
+        '<div class="name">' + esc(it.name) + '</div>' +
+        '<div class="art">' + esc(it.art) + '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function more(){
+  if (shown >= view.length) { elLoader.hidden = true; return; }
+  var end = Math.min(shown + PAGE, view.length);
+  var buf = [];
+  for (var i=shown; i<end; i++) buf.push(cardHTML(view[i], i));
+  elGrid.insertAdjacentHTML('beforeend', buf.join(''));
+  shown = end;
+  elLoader.hidden = shown >= view.length;
+}
+
+var io = new IntersectionObserver(function(entries){
+  if (entries[0].isIntersecting) more();
+}, {rootMargin:'600px 0px'});
+io.observe($('sentinel'));
+window.addEventListener('scroll', function(){
+  if (window.innerHeight + window.scrollY > document.body.offsetHeight - 700) more();
+}, {passive:true});
+
+/* ================= События списка ================= */
+elGrid.addEventListener('click', function(e){
+  var c = e.target.closest('.card');
+  if (!c) return;
+  var it = view[+c.dataset.i];
+  if (it) openProduct(it);
+});
+
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    if (state.cat === t.dataset.cat) return;
+    document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    state.cat = t.dataset.cat;
+    state.sub = 'all';
+    state.brand = 'all';
+    haptic('light');
+    buildChips();
+    apply();
+  });
+});
+
+elSub.addEventListener('click', function(e){
+  var c = e.target.closest('.chip');
+  if (!c) return;
+  elSub.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('active'); });
+  c.classList.add('active');
+  state.sub = c.dataset.sub;
+  haptic('light');
+  apply();
+});
+
+elBrand.addEventListener('click', function(e){
+  var c = e.target.closest('.chip');
+  if (!c) return;
+  elBrand.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('active'); });
+  c.classList.add('active');
+  state.brand = c.dataset.brand;
+  haptic('light');
+  apply();
+});
+
+$('sorts').addEventListener('click', function(e){
+  var b = e.target.closest('.sort');
+  if (!b) return;
+  $('sorts').querySelectorAll('.sort').forEach(function(x){ x.classList.remove('active'); });
+  b.classList.add('active');
+  state.sort = b.dataset.sort;
+  apply();
+});
+
+var tq = null;
+elQ.addEventListener('input', function(){
+  elClr.classList.toggle('on', !!elQ.value);
+  clearTimeout(tq);
+  tq = setTimeout(function(){
+    state.q = elQ.value;
+    apply();
+  }, 140);
+});
+elClr.addEventListener('click', function(){
+  elQ.value = ''; elClr.classList.remove('on');
+  state.q = ''; apply(); elQ.focus();
+});
+
+/* ================= Карточка товара ================= */
+function openProduct(it){
+  current = it;
+  var img = it.img
+    ? '<img src="' + esc(it.img) + '" alt="" ' +
+      'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">' +
+      '<div class="stub" style="display:none">KRAFT</div>'
+    : '<div class="stub">KRAFT</div>';
+
+  var h = '<div class="hero">' + img + '</div>' +
+    '<div class="block">' +
+      '<div class="p-prices">' +
+        '<div class="p-price">' + money(it.price) + '</div>' +
+        (it.old ? '<div class="p-old">' + money(it.old) + '</div>' : '') +
+        (it.disc ? '<div class="p-disc">−' + it.disc + '%</div>' : '') +
+      '</div>' +
+      '<div class="p-name">' + esc(it.name) + '</div>' +
+      '<div class="p-meta">' +
+        '<button class="p-art" id="copyArt">Артикул: ' + esc(it.art) + '</button>' +
+        (it.stock > 0
+          ? '<span class="p-stock in">В наличии' + (it.stock < 100 ? ': ' + it.stock + ' шт.' : '') + '</span>'
+          : '<span class="p-stock out">Нет в наличии</span>') +
+      '</div>' +
+    '</div>' +
+    '<div class="block">' +
+      '<div class="sec-t">Категория</div>' +
+      '<div class="bchips"><span class="bchip">' +
+        (it.cat === 'parts' ? 'Запчасти' : 'Инструмент') + ' · ' + esc(subRu(it.sub)) +
+      '</span></div>' +
+    '</div>';
+
+  if (it.brands && it.brands.length){
+    h += '<div class="block"><div class="sec-t">Подходит для марок</div><div class="bchips">' +
+      it.brands.map(function(b){ return '<span class="bchip">' + esc(b) + '</span>'; }).join('') +
+      '</div></div>';
+  }
+
+  elSheetBody.innerHTML = h;
+  elSheetBody.scrollTop = 0;
+
+  elBuy.classList.toggle('dis', !it.url);
+  elBuy.textContent = it.url ? 'Купить на Ozon' : 'Ссылка недоступна';
+
+  var ca = document.getElementById('copyArt');
+  if (ca) ca.addEventListener('click', function(){ copyText(it.art); });
+
+  elSheet.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  haptic('light');
+  if (TG && TG.BackButton){
+    try { TG.BackButton.show(); TG.BackButton.onClick(closeProduct); } catch(e){}
+  }
+  if (history.pushState) { try { history.pushState({p:1}, ''); } catch(e){} }
+}
+
+function closeProduct(){
+  elSheet.classList.remove('open');
+  document.body.style.overflow = '';
+  current = null;
+  if (TG && TG.BackButton){
+    try { TG.BackButton.hide(); TG.BackButton.offClick(closeProduct); } catch(e){}
+  }
+}
+
+function copyText(t){
+  if (!t) return;
+  var done = function(){ toast('Артикул скопирован'); haptic('light'); };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done, function(){ fallbackCopy(t, done); });
+  } else fallbackCopy(t, done);
+}
+function fallbackCopy(t, cb){
+  var ta = document.createElement('textarea');
+  ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e){ toast('Артикул: ' + t); }
+  document.body.removeChild(ta);
+}
+
+$('back').addEventListener('click', function(){
+  if (history.state && history.state.p) history.back(); else closeProduct();
+});
+window.addEventListener('popstate', function(){
+  if (elSheet.classList.contains('open')) closeProduct();
+});
+elBuy.addEventListener('click', function(){
+  if (current && current.url) { haptic('medium'); openLink(current.url); }
+  else toast('Ссылка на товар не указана');
+});
+
+})();
+</script>
+</body>
+</html>
