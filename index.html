@@ -95,6 +95,7 @@ img{display:block;max-width:100%}
 .toolbar{
   display:flex;align-items:center;gap:8px;padding:9px 12px;
   background:var(--bg);position:sticky;top:var(--header-h);z-index:20;
+  margin-top:-1px;box-shadow:0 4px 8px -4px rgba(16,24,40,.08);
 }
 .sorts{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}
 .sorts::-webkit-scrollbar{display:none}
@@ -445,7 +446,9 @@ function buildChips(){
 }
 
 function syncHeaderOffset(){
-  var h = $('header').offsetHeight + elSub.offsetHeight + (elBrand.hidden ? 0 : elBrand.offsetHeight);
+  // липнет только шапка: чип-бары прокручиваются, поэтому тулбар должен
+  // прилипать сразу под шапкой — иначе между ними сквозит контент
+  var h = $('header').offsetHeight;
   document.documentElement.style.setProperty('--header-h', h + 'px');
 }
 window.addEventListener('resize', syncHeaderOffset);
