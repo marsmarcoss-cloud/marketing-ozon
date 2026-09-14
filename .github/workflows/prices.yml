@@ -1,0 +1,41 @@
+name: Обновление цен каталога
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prices
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install certifi
+      - name: Пересборка каталога из Ozon Seller API
+        env:
+          OZON_S1_ID: ${{ secrets.OZON_S1_ID }}
+          OZON_S1_KEY: ${{ secrets.OZON_S1_KEY }}
+          OZON_S2_ID: ${{ secrets.OZON_S2_ID }}
+          OZON_S2_KEY: ${{ secrets.OZON_S2_KEY }}
+        run: python build_catalog.py
+      - name: Коммит при изменениях
+        run: |
+          git config user.name "kraft-price-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if ! git diff --quiet catalog.json; then
+            git add catalog.json
+            git commit -m "Автообновление цен $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          else
+            echo "Изменений нет"
+          fi
